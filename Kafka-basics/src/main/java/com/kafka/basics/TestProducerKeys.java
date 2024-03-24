@@ -34,6 +34,7 @@ public class TestProducerKeys {
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
         // create producer record
+        // kafka-topics --bootstrap-server localhost:9092 --create --topic second_topic --partitions 3
         String topicName = "first_topic";
 
         for (int i = 0; i < 2; i++) {

@@ -32,6 +32,7 @@ public class TestProducer {
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
         // create producer record
+        //kafka-topics --bootstrap-server localhost:9092 --create --topic first_topic
         String topicName = "first_topic";
         String value = "First Message from Java Producer";
         ProducerRecord<String,String> producerRecord = new ProducerRecord<>(topicName, value);
