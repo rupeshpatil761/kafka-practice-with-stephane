@@ -56,7 +56,7 @@ public class WikimediaChangesProducer {
 
         // stop the producing after 10 mins
         try {
-            TimeUnit.MINUTES.sleep(2);
+            TimeUnit.MINUTES.sleep(1);
         } catch (InterruptedException e) {
         }
         System.exit(0);

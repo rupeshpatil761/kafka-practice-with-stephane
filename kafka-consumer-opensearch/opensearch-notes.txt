@@ -1,0 +1,14 @@
+Run the docker compose file from IDE
+
+Access the open search dev tools on browser at  http://localhost:5601/app/dev_tools#/console
+
+Run the below commands:
+
+1) PUT /my-first-index
+2)PUT /my-first-index/_doc/1
+  {"Description":"to be or not to be, that is a question"}
+3) GET /my-first-index/_doc/1
+4) DELETE /my-first-index/_doc/1
+5) DELETE /my-first-index
+
+
