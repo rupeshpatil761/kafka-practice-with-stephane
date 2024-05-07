@@ -106,11 +106,19 @@ public class OpenSearchConsumer {
                                .id(id); // strategy 1 -- set an ID
 
                        IndexResponse response = openSearchClient.index(indexRequest, RequestOptions.DEFAULT);
-                       log.info("Opensearch Response id: " + response.getId());
+                       //log.info("Opensearch Response id: " + response.getId());
                    } catch(Exception e){
                        // ignore
                    }
                }
+
+                // commit offsets after the batch is consumed
+                // basically we stopped auto commit in the properties
+                // and committing the offsets here manually after batch is processed,
+                // so therefore we are in at least one strategy
+                consumer.commitSync();
+                log.info("Offsets have been committed");
+                // check the logs in console
             }
         }
         // close things
@@ -136,6 +144,11 @@ public class OpenSearchConsumer {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // latest
+
+        //by default enable.auto.commit=true and auto.commit.interval.ms=5000
+
+        // stop committing offset automatically
+        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
         // create consumer
         return new KafkaConsumer<>(properties);
