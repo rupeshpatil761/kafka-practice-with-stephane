@@ -15,6 +15,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.protocol.Errors;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.index.IndexResponse;
 import org.opensearch.client.RequestOptions;
@@ -87,6 +88,8 @@ public class OpenSearchConsumer {
                int recordCount = records.count();
                log.info("Received "+recordCount+" records");
 
+               BulkRequest bulkRequest = new BulkRequest();
+
                for (ConsumerRecord<String, String> record: records) {
                    // send the record into opensearch
 
@@ -105,19 +108,35 @@ public class OpenSearchConsumer {
                                .source(record.value(), XContentType.JSON)
                                .id(id); // strategy 1 -- set an ID
 
-                       IndexResponse response = openSearchClient.index(indexRequest, RequestOptions.DEFAULT);
-                       //log.info("Opensearch Response id: " + response.getId());
+                       // instead of pushing each record to opensearch, push it in batch or bulk
+                       bulkRequest.add(indexRequest);
+
+                      // IndexResponse response = openSearchClient.index(indexRequest, RequestOptions.DEFAULT);
+                      // log.info("Opensearch Response id: " + response.getId());
                    } catch(Exception e){
                        // ignore
                    }
                }
 
-                // commit offsets after the batch is consumed
-                // basically we stopped auto commit in the properties
-                // and committing the offsets here manually after batch is processed,
-                // so therefore we are in at least one strategy
-                consumer.commitSync();
-                log.info("Offsets have been committed");
+               if(bulkRequest.numberOfActions() > 0) {
+                   // execute bulk request
+                   BulkResponse bulkResponse = openSearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+                   log.info("Inserted: "+bulkResponse.getItems().length + " records");
+
+                   try {
+                       // to increase the chances of bulk insert
+                       Thread.sleep(1000l);
+                   } catch (Exception e1) {
+                       // ignore
+                   }
+
+                   // commit offsets after the batch is consumed
+                   // basically we stopped auto commit in the properties
+                   // and committing the offsets here manually after batch is processed,
+                   // so therefore we are in at least one strategy
+                   consumer.commitSync();
+                   log.info("Offsets have been committed");
+               }
                 // check the logs in console
             }
         }
