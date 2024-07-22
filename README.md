@@ -1,2 +1,2 @@
 # kafka-practice
-Repo with kafka java and spring boot examples
+kafka practice for Stephane Maarek udemy course 
